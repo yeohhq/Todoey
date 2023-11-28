@@ -14,15 +14,17 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 60
+        
+        tableView.register(UINib(nibName: "TableViewCell", bundle: nil), forCellReuseIdentifier: "TableViewCell")
     }
     
     // MARK: - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! SwipeTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as! TableViewCell
         cell.delegate = self
-        if cell.textLabel?.text == nil {
-            cell.textLabel?.text = "Nothing added yet."
+        if cell.title == "" {
+            cell.titleLabel.text = "Nothing added yet."
         }
         return cell
     }
@@ -63,4 +65,31 @@ extension SwipeTableViewController {
         present(errorAlert, animated: true, completion: nil)
     }
     
+}
+
+// MARK: - Search Bar Methods
+
+extension SwipeTableViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        search(searchBar.text!)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.count == 0 {
+            search() // reset UI to show all items
+            
+            // Hide keyboard, go to inactivated state again
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        } else {
+            search(searchText)
+        }
+    }
+    
+    // Implement in subclasses
+    @objc func search(_ searchText: String? = "") {
+        // What to display as search results
+    }
 }

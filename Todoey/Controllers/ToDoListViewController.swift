@@ -8,20 +8,24 @@
 
 import UIKit
 import RealmSwift
-import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController {
     
     let realm = try! Realm()
-    
-    @IBOutlet weak var searchBar: UISearchBar!
     var items: Results<Item>?
     var selectedCategory: Category? {
         didSet {
             loadItems() // Call once selectedCategory did get set
         }
     }
-
+    
+    // Search bar
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    // Hide button
+    var hideDone: Bool = false
+    @IBOutlet weak var hideButton: UIBarButtonItem!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
@@ -31,14 +35,9 @@ class ToDoListViewController: SwipeTableViewController {
     // MARK: - TableView Datasource
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath) as! TableViewCell
         if let item = items?[indexPath.row] {
-            cell.textLabel?.text = item.title
-            if let color = UIColor(hexString: selectedCategory?.color)?
-                .darken(byPercentage: 0.7 * CGFloat(indexPath.row) / CGFloat(items!.count)) {
-                cell.backgroundColor = color
-                cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: color, isFlat: true)
-            }
+            cell.configure(title: item.title)
             cell.accessoryType = item.done ? .checkmark : .none // Toggle checked
         }
         return cell
@@ -60,6 +59,18 @@ class ToDoListViewController: SwipeTableViewController {
         }
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true) // deselect item after being selected
+    }
+    
+    @IBAction func hideButtonPressed(_ sender: UIBarButtonItem) {
+        hideDone = !hideDone
+        if hideDone { // Hide done items
+            items = items?.filter("done == false")
+            tableView.reloadData()
+            hideButton.image = UIImage(systemName: "eye")
+        } else {
+            loadItems()
+            hideButton.image = UIImage(systemName: "eye.slash")
+        }
     }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -123,34 +134,17 @@ class ToDoListViewController: SwipeTableViewController {
             }
         }
     }
-}
-
-// MARK: - Search Bar Methods
-
-extension ToDoListViewController: UISearchBarDelegate {
     
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        search(searchText: searchBar.text!)
-    }
+    // MARK: - Search Bar Methods
     
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchBar.text?.count == 0 {
-            loadItems() // reset UI to show all items
-            
-            // Hide keyboard, go to inactivated state again
-            DispatchQueue.main.async {
-                searchBar.resignFirstResponder()
-            }
+    override func search(_ searchText: String? = "") {
+        if searchText == "" {
+            loadItems()
         } else {
-            search(searchText: searchText)
+            items = items?
+                .filter("title CONTAINS[dc] %@", searchText)
+                .sorted(byKeyPath: "dateCreated", ascending: true)
         }
-    }
-    
-    func search(searchText: String) {
-        items = items?
-            .filter("title CONTAINS[dc] %@", searchText)
-            .sorted(byKeyPath: "dateCreated", ascending: true)
-        
         self.tableView.reloadData()
     }
 }

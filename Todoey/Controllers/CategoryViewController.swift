@@ -9,19 +9,20 @@
 import UIKit
 import RealmSwift
 import SwipeCellKit
-import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
+    @IBOutlet weak var searchBar: UISearchBar!
     var categories: Results<Category>? // no need to append new categories to it anymore, will auto retrieve from Realm db
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.loadCategories()
+        searchBar.delegate = self
     }
-
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField()
         
@@ -39,7 +40,6 @@ class CategoryViewController: SwipeTableViewController {
                 if newCategory.count > 0 {
                     let category = Category()
                     category.name = newCategory
-                    category.color = UIColor.randomFlat().hexValue()
                     self.save(category: category)
                 } else {
                     self.showErrorAlert(message: "Text field cannot be empty.")
@@ -66,10 +66,9 @@ class CategoryViewController: SwipeTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath) as! TableViewCell
         if let category = categories?[indexPath.row] {
-            cell.backgroundColor = UIColor(hexString: category.color)
-            cell.textLabel?.text = category.name
+            cell.configure(title: category.name, itemsCount: category.items.count)
         }
         return cell
     }
@@ -115,5 +114,18 @@ class CategoryViewController: SwipeTableViewController {
                 self.showErrorAlert(message: "Error deleting category: \(error)")
             }
         }
+    }
+    
+    // MARK: - Search Bar Methods
+    
+    override func search(_ searchText: String? = "") {
+        if searchText == "" {
+            loadCategories()
+        } else {
+            self.categories = self.categories?
+                .filter("name CONTAINS[dc] %@", searchText)
+                .sorted(byKeyPath: "name", ascending: true)
+        }
+        self.tableView.reloadData()
     }
 }

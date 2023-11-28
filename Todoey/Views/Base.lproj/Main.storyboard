@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,9 +17,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <searchBar key="tableHeaderView" contentMode="redraw" searchBarStyle="minimal" id="zEO-Uy-0uO">
+                            <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <textInputTraits key="textInputTraits"/>
+                            <connections>
+                                <outlet property="delegate" destination="HdL-EW-VDg" id="0Hm-4W-Glv"/>
+                            </connections>
+                        </searchBar>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="Cell" id="rzW-9C-GNv" customClass="SwipeTableViewCell" customModule="SwipeCellKit">
-                                <rect key="frame" x="0.0" y="50" width="393" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="TableViewCell" id="rzW-9C-GNv" customClass="SwipeTableViewCell" customModule="SwipeCellKit">
+                                <rect key="frame" x="0.0" y="94" width="393" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rzW-9C-GNv" id="sjm-b5-9gD">
                                     <rect key="frame" x="0.0" y="0.0" width="362.66666666666669" height="44"/>
@@ -33,7 +42,7 @@
                     </tableView>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Todoey" id="RGe-Tj-ai7">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Jnc-fE-Y1R">
+                        <barButtonItem key="rightBarButtonItem" systemItem="compose" id="Jnc-fE-Y1R">
                             <connections>
                                 <action selector="addButtonPressed:" destination="yqa-Ib-Fr9" id="Hs9-dF-Cwl"/>
                             </connections>
@@ -41,6 +50,7 @@
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="searchBar" destination="zEO-Uy-0uO" id="mfu-Eg-sWu"/>
                         <segue destination="HdL-EW-VDg" kind="show" identifier="goToItems" id="pXd-rB-fgJ"/>
                     </connections>
                 </tableViewController>
@@ -56,7 +66,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <searchBar key="tableHeaderView" contentMode="redraw" id="SrA-4z-3SH">
+                        <searchBar key="tableHeaderView" contentMode="redraw" searchBarStyle="minimal" id="SrA-4z-3SH">
                             <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <textInputTraits key="textInputTraits"/>
@@ -65,7 +75,7 @@
                             </connections>
                         </searchBar>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Cell" id="5X6-oN-f9a" customClass="SwipeTableViewCell" customModule="SwipeCellKit">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TableViewCell" id="5X6-oN-f9a" customClass="SwipeTableViewCell" customModule="SwipeCellKit">
                                 <rect key="frame" x="0.0" y="94" width="393" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="5X6-oN-f9a" id="Ucs-7C-uhx">
@@ -80,13 +90,22 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Items" id="uSZ-WP-0n6">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="TzD-Pp-bat">
-                            <connections>
-                                <action selector="addButtonPressed:" destination="HdL-EW-VDg" id="dKF-YL-rsU"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem systemItem="add" id="TzD-Pp-bat">
+                                <connections>
+                                    <action selector="addButtonPressed:" destination="HdL-EW-VDg" id="dKF-YL-rsU"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Hide Done" id="GmS-rv-HdX">
+                                <imageReference key="image" image="eye.slash" catalog="system" variableValue="0.0"/>
+                                <connections>
+                                    <action selector="hideButtonPressed:" destination="HdL-EW-VDg" id="s82-1u-0rY"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="hideButton" destination="GmS-rv-HdX" id="Eel-9R-SZ0"/>
                         <outlet property="searchBar" destination="SrA-4z-3SH" id="4dv-A9-lgD"/>
                     </connections>
                 </tableViewController>
@@ -99,8 +118,8 @@
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="8sq-RI-vlD" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="o4V-c5-LJY">
-                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="o4V-c5-LJY">
+                        <rect key="frame" x="0.0" y="59" width="393" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -114,6 +133,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="eye.slash" catalog="system" width="128" height="95"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
