@@ -7,17 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
+import SwipeCellKit
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
-    var categories = [ToDoCategory]()
+    let realm = try! Realm()
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var categories: Results<Category>? // no need to append new categories to it anymore, will auto retrieve from Realm db
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         self.loadCategories()
     }
 
@@ -36,10 +37,10 @@ class CategoryViewController: UITableViewController {
         let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
             if let newCategory = textField.text {
                 if newCategory.count > 0 {
-                    let category = ToDoCategory(context: self.context)
+                    let category = Category()
                     category.name = newCategory
-                    self.categories.append(category)
-                    self.saveCategories()
+                    category.color = UIColor.randomFlat().hexValue()
+                    self.save(category: category)
                 } else {
                     self.showErrorAlert(message: "Text field cannot be empty.")
                 }
@@ -61,13 +62,15 @@ class CategoryViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        cell.textLabel?.text = categories[indexPath.row].name
-        
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        if let category = categories?[indexPath.row] {
+            cell.backgroundColor = UIColor(hexString: category.color)
+            cell.textLabel?.text = category.name
+        }
         return cell
     }
     
@@ -80,27 +83,37 @@ class CategoryViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! ToDoListViewController
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categories[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
         }
     }
     
     // MARK: - Data Manipulation Methods
     
-    func saveCategories() {
+    func save(category: Category) {
         do {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
-            self.showErrorAlert(message: "Error saving context: \(error)")
+            self.showErrorAlert(message: error.localizedDescription)
         }
         self.tableView.reloadData()
     }
     
-    func loadCategories(with request: NSFetchRequest<ToDoCategory> = ToDoCategory.fetchRequest()) {
-        do {
-            categories = try context.fetch(request)
-        } catch {
-            self.showErrorAlert(message: "Unable to fetch data from context: \(error)")
+    func loadCategories() {
+        categories = realm.objects(Category.self)
+        self.tableView.reloadData()
+    }
+
+    override func updateModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                self.showErrorAlert(message: "Error deleting category: \(error)")
+            }
         }
-        tableView.reloadData()
     }
 }
